@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<application xmlns="http://ns.adobe.com/air/application/18.0">
+
+	<id>com.speakaboos.ane.optimizely</id>
+	<filename>OptimizelyTest</filename>
+	<name>OptimizelyTest</name>
+	<versionNumber>0.0.0</versionNumber>
+	<initialWindow>
+		<content>OptimizelyTest.swf</content>
+		<aspectRatio>landscape</aspectRatio>
+		<autoOrients>true</autoOrients>
+		<fullScreen>false</fullScreen>
+		<visible>true</visible>
+		<renderMode>gpu</renderMode>
+	</initialWindow>
+	
+	
+	<android>
+		<manifestAdditions><![CDATA[
+		
+			<manifest android:installLocation="auto">
+			    <uses-permission android:name="android.permission.INTERNET"/>
+			    <uses-permission android:name="android.permission.BLUETOOTH" />
+				<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/> 
+				<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+				<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+				<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+				<uses-permission android:name="com.android.vending.BILLING"/>
+				<uses-permission android:name="nabi.permission.IN_APP_PURCHASE"/>
+				
+				<application
+			        android:allowBackup="true"
+			        android:debuggable="true"
+			        android:enabled="true"
+			        android:persistent="true">
+			        
+					<activity android:exported="true">
+						<intent-filter>
+							<action android:name="android.intent.action.MAIN" />
+							<category android:name="android.intent.category.LAUNCHER" />
+						</intent-filter>
+					</activity>	
+
+			    </application>
+			    
+			</manifest>
+			
+		]]></manifestAdditions>
+	</android>
+	
+	<iPhone>
+		<InfoAdditions><![CDATA[
+			<key>UIDeviceFamily</key>
+			<array>
+				<string>1</string>
+				<string>2</string>
+			</array>
+		]]></InfoAdditions>
+		<requestedDisplayResolution>high</requestedDisplayResolution>
+		<Entitlements><![CDATA[
+			<key>application-identifier</key>
+			<string>82HG9NWDTR.com.speakaboos.ane</string>
+		]]></Entitlements>
+	</iPhone>
+
+
+
+
+<extensions>
+        <extensionID>com.speakaboos.ane.OptimizelyANE</extensionID>
+    </extensions>
+</application>

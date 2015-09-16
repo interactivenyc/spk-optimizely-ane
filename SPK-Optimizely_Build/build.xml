@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Air Native Extension Build Scripts" default="all">
+
+	<property file="build.config"/>
+	
+	<taskdef name="mxmlcTask" classname="flex.ant.MxmlcTask" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" /> 
+	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" /> 
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="${speakaboos.dir}/tools/ant-contrib.jar" /> 
+		</classpath>
+	</taskdef>
+	
+	<target name="all" depends="getIP,compile,makejar,combinejars,buildswcs,unzipswcs,packageAndroid,distribute,clean,compileTest,copyCerts,copyANE,packageTestAndroid,installTestAndroid" description="Full build of extension">
+		<echo>${ane.name} Native Extension created!</echo>
+	</target>
+	
+	<target name="buildOptimizely" depends="getIP,compile,makejar,combinejars,buildswcs,unzipswcs,packageAndroid,distribute,clean">
+	    <echo>buildOptimizely finished</echo>
+	</target>
+	
+	<target name="testOptimizely" depends="getIP,compileTest,copyCerts,copyANE,packageTestAndroid,installTestAndroid">
+	    <echo>testOptimizely finished</echo>
+	</target>
+	
+	<target name="getIP">
+		<var name="CURRENT_IP" unset="true"/>
+		<exec executable="/bin/bash" outputproperty="CURRENT_IP">
+			<arg value="-c"/>
+			<arg value="ifconfig | grep inet | grep -v 127.0.0.1 | grep 192 | cut -d\  -f2"/>
+		</exec>
+		<if>
+			<equals arg1="${CURRENT_IP}" arg2="" />
+			<then>
+				<fail>CONNECT set but unable to get IP, check WIFI (must be on, and same as device to test)</fail>
+			</then>
+			<else>
+			    <echo>Current IP: ${CURRENT_IP}</echo>
+			</else>
+		</if>
+	</target>
+
+	<target name="clean" description="Clean the output and temp folders">
+		<echo>Cleaning ${ane.name} ANE output and temp folders...</echo>
+		
+		<delete file="${project.dir.build}/com.speakaboos.ane.${ane.name}.ane"/>
+		<delete file="${project.dir.build}/library.swf"/>
+		<delete dir="${project.dir.build}/Android-ARM"/>
+		<delete dir="${project.dir.build}/iPhone-ARM"/>
+		<delete dir="${project.dir.build}/Default"/>
+
+		<delete dir="${project.dir.swc}/bin"/>
+		<delete dir="${project.dir.default}/bin"/>
+		
+		<delete dir="${project.dir.ios}/Build"/>
+	
+	</target>
+	
+	<target name ="compile" description="Compile Java classes for inclusion in JAR">
+		<echo>Compile</echo>
+
+		<delete dir="${project.dir.java}/classes"/>
+		<mkdir dir="${project.dir.java}/classes"/>
+
+		<path id = "classpath">
+			<fileset dir="${project.dir.java}/libs" includes="*.jar"/>
+			<pathelement location="${android.sdk}/android.jar" />
+			<pathelement location="${FLEX_HOME}/lib/android/FlashRuntimeExtensions.jar"/>
+		</path>
+		
+		<javac
+            includeantruntime="false"
+            failonerror="true"
+            srcdir="${project.dir.java}/src"
+            destdir="${project.dir.java}/classes"
+            classpathref="classpath">
+		</javac>
+		
+	</target>
+
+
+	<target name ="makejar" description="make jar file from source">
+		<echo>Make Jar</echo>
+		<delete file="${project.dir.java}/${project.prefix}.jar"/>
+		<jar
+            destfile="${project.dir.java}/${project.prefix}.jar"
+            basedir="${project.dir.java}/classes"
+        />
+	</target>
+	
+	
+	<target name ="combinejars" description="combine jars">
+		<delete file="${project.dir.java}/${project.prefix}_combined.jar"/>
+		<zip destfile="${project.dir.java}/${project.prefix}_combined.jar">
+		    <zipgroupfileset dir="${project.dir.java}" includes="${project.prefix}.jar"/>
+		    <zipgroupfileset dir="${project.dir.java}/libs" excludes="android-support-v4.jar" includes="*.jar"/>
+		</zip>
+	</target>
+
+	<target name="buildIOS">
+	    <exec executable="${xcodebuild}">
+	        <arg value="-project"/>
+	        <arg value="${project.dir.ios}/${ane.name}.xcodeproj"/>
+	        <arg value="-scheme"/>
+	        <arg value="${scheme}"/>
+	        <!-- <arg value="-configuration"/> -->
+	        <!-- <arg value="${configuration}"/> -->
+	        <arg value="-sdk"/>
+	        <arg value="iphoneos"/>
+	        <arg value="clean"/>
+	        <arg value="build"/>
+		</exec>
+	</target>
+	
+	<target name="buildswcs" depends="" description="" >
+		<compc output="${project.dir.swc}/bin/${ane.name}.swc" swf-version="${swfversion}">
+			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml" />
+			<source-path path-element="${project.dir.swc}/src/" />
+			<include-classes>${ane.baseclass}</include-classes>
+		</compc>
+		<compc output="${project.dir.default}/bin/${ane.name}.swc" swf-version="${swfversion}">
+			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml" />
+			<source-path path-element="${project.dir.default}/src/" />
+			<include-classes>${ane.baseclass}</include-classes>
+		</compc>
+	</target>
+
+	
+	<target name ="unzipswcs" description="unzip swcs">
+		<delete file="${project.dir.swc}/bin/library.swf"/>
+		<unzip src="${project.dir.swc}/bin/${ane.name}.swc" dest="${project.dir.swc}/bin/" overwrite="true">
+			<patternset>
+				<include name="library.swf" />
+			</patternset>
+		</unzip>
+		
+		<delete file="${project.dir.default}/bin/library.swf"/>
+		<unzip src="${project.dir.default}/bin/${ane.name}.swc" dest="${project.dir.default}/bin/" overwrite="true">
+			<patternset>
+				<include name="library.swf" />
+			</patternset>
+		</unzip>
+	</target>
+	
+	<target name="package" description="Create the extension package">
+		<echo>Creating ${ane.name} (.ane)...</echo>
+		
+		<echo>Creating for Android...</echo>
+		
+		<delete dir="${project.dir.build}/Android-ARM"/>
+		<mkdir dir="${project.dir.build}/Android-ARM"/>
+		
+		<copy file="${project.dir.swc}/bin/library.swf" tofile="${project.dir.build}/Android-ARM/library.swf"/>
+		<copy file="${project.dir.java}/${project.prefix}_combined.jar" tofile="${project.dir.build}/Android-ARM/${project.prefix}.jar"/>
+				
+		<copy todir="${project.dir.build}/Android-ARM/res">
+			<fileset dir="${project.dir.java}/res"/>
+		</copy>
+		
+		<copy todir="${project.dir.build}/Android-ARM/libs">
+			<fileset dir="${project.dir.java}/libs"/>
+		</copy>
+		
+		<echo>Creating for iPhone...</echo>
+		
+		<delete dir="${project.dir.build}/iPhone-ARM"/>
+		<mkdir dir="${project.dir.build}/iPhone-ARM"/>
+		
+		<copy file="${project.dir.swc}/bin/library.swf" tofile="${project.dir.build}/iPhone-ARM/library.swf"/>
+		<copy file="${project.dir.ios}/Build/Products/Release-iphoneos/${lib.a}" tofile="${project.dir.build}/iPhone-ARM/${lib.a}"/>
+		
+		<exec executable="${adt}" failonerror="true" dir="${project.dir.build}">
+			<arg value="-package"/>
+			<arg value="-target"/>
+			<arg value="ane"/>
+			<arg value="com.speakaboos.ane.${ane.name}.ane"/>
+			<arg value="extension.xml"/>
+			<arg value="-swc"/>
+			<arg value="${project.dir.swc}/bin/${ane.name}.swc"/>
+			
+			<arg value="-platform"/>
+			<arg value="Android-ARM"/>
+			<arg value="-C"/>
+			<arg value="${project.dir.build}/Android-ARM"/>
+			<arg value="."/>
+			
+			<arg value="-platform"/>
+			<arg value="iPhone-ARM"/>
+			<arg value="-C"/>
+			<arg value="${project.dir.build}/iPhone-ARM"/>
+			<arg value="."/>
+			
+			<arg value="-platform"/>
+			<arg value="default"/>
+			<arg value="-C"/>
+			<arg value="${project.dir.default}/bin"/>
+			<arg value="."/>
+		</exec>
+	</target>
+	
+	<target name="prepackageAndroid" description="Create the extension package">
+	    <echo>Creating for Android...</echo>
+		
+		<delete dir="${project.dir.build}/Android-ARM"/>
+		<mkdir dir="${project.dir.build}/Android-ARM"/>
+		
+		<copy file="${project.dir.swc}/bin/library.swf" tofile="${project.dir.build}/Android-ARM/library.swf"/>
+		<copy file="${project.dir.java}/${project.prefix}_combined.jar" tofile="${project.dir.build}/Android-ARM/${project.prefix}.jar"/>
+				
+		
+		<copy todir="${project.dir.build}/Android-ARM/res">
+			<fileset dir="${project.dir.java}/res"/>
+		</copy>
+		 
+		
+		<copy todir="${project.dir.build}/Android-ARM/libs">
+			<fileset dir="${project.dir.java}/libs"/>
+		</copy>
+	</target>
+	
+	<target name="packageAndroid" depends="prepackageAndroid" description="Create the extension package">
+	    <exec executable="${adt}" failonerror="true" dir="${project.dir.build}">
+			<arg value="-package"/>
+			<arg value="-target"/>
+			<arg value="ane"/>
+			<arg value="com.speakaboos.ane.${ane.name}.ane"/>
+			<arg value="extension.xml"/>
+			<arg value="-swc"/>
+			<arg value="${project.dir.swc}/bin/${ane.name}.swc"/>
+			
+			<arg value="-platform"/>
+			<arg value="Android-ARM"/>
+			<arg value="-C"/>
+			<arg value="${project.dir.build}/Android-ARM"/>
+			<arg value="."/>
+			
+			<arg value="-platform"/>
+			<arg value="default"/>
+			<arg value="-C"/>
+			<arg value="${project.dir.default}/bin"/>
+			<arg value="."/>
+		</exec>
+	</target>
+	
+	<target name="distribute" description="copy files to Speakaboos Mobile App and Test Folder">
+	    
+	    
+		<copy file="${project.dir.swc}/bin/${ane.name}.swc" tofile="${speakaboos.dir}/lib/${ane.name}.swc"/>
+		<copy file="${project.dir.build}/com.speakaboos.ane.${ane.name}.ane" tofile="${speakaboos.dir}/lib_ane/com.speakaboos.ane.${ane.name}.ane"/>
+		
+		
+		<copy file="${project.dir.swc}/bin/${ane.name}.swc" tofile="${project.dir.test}/libs/${ane.name}.swc"/>
+		<copy file="${project.dir.build}/com.speakaboos.ane.${ane.name}.ane" tofile="${project.dir.test}/libs_ane/com.speakaboos.ane.${ane.name}.ane"/>
+	</target>
+	
+	<target name="buildTestAll" depends="getIP,compileTest,packageTestAndroid,installTestAndroid,packageTestIOS,installTestIOS" />
+	<target name="buildTestIOS" depends="getIP,compileTest,packageTestIOS,installTestIOS" />
+	<target name="buildTestAndroid" depends="getIP,compileTest,packageTestAndroid,installTestAndroid" />
+	
+	<target name="compileTest" depends="" description="" >
+	    <mxmlcTask file="${project.testclass}" output="${project.dir.test}/bin-debug/${project.testswf}" actionscript-file-encoding="UTF-8" keep-generated-actionscript="false" show-actionscript-warnings="true" optimize="true" locale="en_US" incremental="true" fork="true" maxmemory="1024m" >
+			<load-config filename="${project.dir.build}/baseConfig.xml" />
+			<source-path path-element="${project.dir.test}/src" />
+			<compiler.advanced-telemetry>true</compiler.advanced-telemetry>
+			<compiler.debug>true</compiler.debug>
+		</mxmlcTask> 
+	</target>
+	
+	<target name="packageTestAndroid" depends="" description="package app without settings, private">
+		<mkdir dir="${project.dir.test}/bin-debug/libs_ane"/>
+		<copy file="${project.dir.test}/libs_ane/com.speakaboos.ane.${ane.name}.ane" tofile="${project.dir.test}/bin-debug/libs_ane/com.speakaboos.ane.${ane.name}.ane"/>
+		
+		<exec executable="${adt}" failonerror="true" dir="${project.dir.build}">
+			<arg line="-package -target apk-debug -connect ${CURRENT_IP} -storetype pkcs12 -keystore ${project.dir.test}/bin-debug/cert/${android.p12} -storepass ${android.p12.pwd} ${project.dir.test}/bin-debug/${project.testapk} ${project.testmanifest} -C ${project.dir.test}/bin-debug ${project.testswf} -extdir ${project.dir.test}/bin-debug/libs_ane" />
+			
+		</exec>
+	</target>
+	
+	<target name="packageTestIOS" depends="" description="" >
+		<mkdir dir="${project.dir.test}/bin-debug/libs_ane"/>
+		<copy file="${project.dir.test}/libs_ane/com.speakaboos.ane.${ane.name}.ane" tofile="${project.dir.test}/bin-debug/libs_ane/com.speakaboos.ane.${ane.name}.ane"/>
+		
+		<exec executable="${adt}" failonerror="true" dir="${project.dir.build}">
+			<arg line="-package -target ipa-debug -connect ${CURRENT_IP} -provisioning-profile ${project.dir.test}/cert/Speakaboos_ANE.mobileprovision -storetype pkcs12 -keystore ${project.dir.test}/cert/ccm-dev.p12 -storepass gr33nDr@g0n ${project.dir.test}/bin-debug/${project.testipa} ${project.testmanifest} -C ${project.dir.test}/bin-debug ${project.testswf} -extdir ${project.dir.test}/bin-debug/libs_ane" />
+		</exec>
+	</target>
+	
+	<target name="installTestAndroid" depends="" description="" >
+		<exec executable="sh" failonerror="true">
+			<arg value="-c" />
+			<arg value="adb install -r ${project.dir.test}/bin-debug/${project.testapk}"/>
+		</exec>
+    </target>
+	
+	<target name="installTestIOS" depends="" description="" >
+		<exec executable="sh" failonerror="true">
+			<arg value="-c" />
+			<arg value="adt -installApp -platform ios -package ${project.dir.test}/bin-debug/${project.testipa}"/>
+		</exec>
+    </target>
+    
+	<target name="copyCerts" depends="" description="" >
+	    <mkdir dir="${project.dir.test}/bin-debug/cert"/>
+		<copy file="${cert.path}${ios.p12}" tofile="${project.dir.test}/bin-debug/cert/${ios.p12}"/>
+		<copy file="${cert.path}${android.p12}" tofile="${project.dir.test}/bin-debug/cert/${android.p12}"/>
+		<copy file="${cert.path}${mobileprovision.file}" tofile="${project.dir.test}/bin-debug/cert/${mobileprovision.file}"/>
+	 </target>
+	 
+	
+	<target name="copyANE" depends="" description="" >
+	    <!-- <mkdir dir="${project.dir.test}/bin-debug/libs_ane"/>
+		<copy file="${project.dir.test}/libs_ane/com.speakaboos.ane.${ane.name}.ane" tofile="${project.dir.test}/bin-debug/libs_ane/com.speakaboos.ane.${ane.name}.ane"/>
+		 -->
+		<copy todir="${project.dir.test}/bin-debug/libs_ane">
+		  <fileset dir="${project.dir.test}/libs_ane/"/>
+		</copy>
+		
+		
+	</target>
+
+</project>
