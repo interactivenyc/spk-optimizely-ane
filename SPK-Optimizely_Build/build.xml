@@ -15,7 +15,7 @@
 		<echo>${ane.name} Native Extension created!</echo>
 	</target>
 	
-	<target name="buildOptimizely" depends="getIP,compile,makejar,combinejars,buildswcs,unzipswcs,package,distribute,clean">
+	<target name="buildOptimizely" depends="getIP,compile,makejar,combinejars,buildswcs,unzipswcs,package,distribute">
 	    <echo>buildOptimizely finished</echo>
 	</target>
 	
@@ -178,9 +178,9 @@
 		<!-- <copy todir="${project.dir.build}/iPhone-ARM/Frameworks">
 		    <fileset dir="${project.dir.build}/Frameworks"/>
 		</copy> -->
-		<copy todir="${project.dir.build}/iPhone-ARM/include">
+		<!-- <copy todir="${project.dir.build}/iPhone-ARM/include">
 		    <fileset dir="${project.dir.ios}/Build/Products/Debug-iphoneos/include"/>
-		</copy>
+		</copy> -->
 		
 		<delete dir="${project.dir.build}/iPhone-x86"/>
 		<mkdir dir="${project.dir.build}/iPhone-x86"/>
@@ -192,9 +192,9 @@
 		<!-- <copy todir="${project.dir.build}/iPhone-x86/Frameworks">
 		    <fileset dir="${project.dir.build}/Frameworks"/>
 		</copy> -->
-		<copy todir="${project.dir.build}/iPhone-x86/include">
+		<!-- <copy todir="${project.dir.build}/iPhone-x86/include">
 		    <fileset dir="${project.dir.ios}/Build/Products/Debug-iphoneos/include"/>
-		</copy>
+		</copy> -->
 		
 		<exec executable="${adt}" failonerror="true" dir="${project.dir.build}">
 			<arg value="-package"/>
@@ -282,13 +282,7 @@
 	</target>
 	
 	<target name="distribute" description="copy files to Speakaboos Mobile App and Test Folder">
-	    
-	    
-		<copy file="${project.dir.swc}/bin/${ane.name}.swc" tofile="${speakaboos.dir}/lib/${ane.name}.swc"/>
-		<copy file="${project.dir.build}/com.speakaboos.ane.${ane.name}.ane" tofile="${speakaboos.dir}/lib_ane/com.speakaboos.ane.${ane.name}.ane"/>
-		
-		
-		<copy file="${project.dir.swc}/bin/${ane.name}.swc" tofile="${project.dir.test}/libs/${ane.name}.swc"/>
+	    <copy file="${project.dir.swc}/bin/${ane.name}.swc" tofile="${project.dir.test}/libs/${ane.name}.swc"/>
 		<copy file="${project.dir.build}/com.speakaboos.ane.${ane.name}.ane" tofile="${project.dir.test}/libs_ane/com.speakaboos.ane.${ane.name}.ane"/>
 	</target>
 	

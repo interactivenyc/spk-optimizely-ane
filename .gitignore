@@ -13,9 +13,26 @@ bin-release/
 # OSX system files
 .DS_Store
 
+#IOS Build Folder
 SPK-Optimizely_IOS/OptimizelyANE/Build
-SPK-Optimizely_TestAIR/bin-debug
+
+#Ignore Local Test Project
 SPK-Optimizely_IOS/SingleViewApp/
 
+#Platform Build Folders
+SPK-Optimizely_Build/Android-ARM/
+SPK-Optimizely_Build/iPhone-ARM/
+SPK-Optimizely_Build/iPhone-x86/
+
+#Test Build Files
+SPK-Optimizely_TestAIR/bin-debug
 SPK-Optimizely_TestAIR/libs/
 SPK-Optimizely_TestAIR/libs_ane/
+
+#Java JAR Files from build process
+SPK-Optimizely_Java/SPK-Optimizely.jar
+SPK-Optimizely_Java/SPK-Optimizely_combined.jar
+
+#ANE Build File
+SPK-Optimizely_Build/com.speakaboos.ane.OptimizelyANE.ane
+
