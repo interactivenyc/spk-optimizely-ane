@@ -14,3 +14,8 @@ bin-release/
 .DS_Store
 
 SPK-Optimizely_IOS/OptimizelyANE/Build
+SPK-Optimizely_TestAIR/bin-debug
+SPK-Optimizely_IOS/SingleViewApp/
+
+SPK-Optimizely_TestAIR/libs/
+SPK-Optimizely_TestAIR/libs_ane/

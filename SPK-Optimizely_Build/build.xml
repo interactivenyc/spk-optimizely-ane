@@ -7,7 +7,7 @@
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" /> 
 	<taskdef resource="net/sf/antcontrib/antlib.xml">
 		<classpath>
-			<pathelement location="${speakaboos.dir}/tools/ant-contrib.jar" /> 
+			<pathelement location="${project.dir.build}/tools/ant-contrib.jar" /> 
 		</classpath>
 	</taskdef>
 	
@@ -15,7 +15,7 @@
 		<echo>${ane.name} Native Extension created!</echo>
 	</target>
 	
-	<target name="buildOptimizely" depends="getIP,compile,makejar,combinejars,buildswcs,unzipswcs,package,distribute">
+	<target name="buildOptimizely" depends="getIP,compile,makejar,combinejars,buildswcs,unzipswcs,package,distribute,clean">
 	    <echo>buildOptimizely finished</echo>
 	</target>
 	
@@ -51,6 +51,7 @@
 		<delete file="${project.dir.build}/library.swf"/>
 		<delete dir="${project.dir.build}/Android-ARM"/>
 		<delete dir="${project.dir.build}/iPhone-ARM"/>
+		<delete dir="${project.dir.build}/iPhone-x86"/>
 		<delete dir="${project.dir.build}/Default"/>
 
 		<delete dir="${project.dir.swc}/bin"/>
@@ -174,9 +175,9 @@
 		<copy file="${project.dir.swc}/bin/library.swf" tofile="${project.dir.build}/iPhone-ARM/library.swf"/>
 		<copy file="${project.dir.ios}/Build/Products/Debug-iphoneos/${lib.a}" tofile="${project.dir.build}/iPhone-ARM/${lib.a}"/>
 		<copy file="${project.dir.ios}/Build/Products/Debug-iphoneos/${libPods.a}" tofile="${project.dir.build}/iPhone-ARM/${libPods.a}"/>
-		<copy todir="${project.dir.build}/iPhone-ARM/Frameworks">
+		<!-- <copy todir="${project.dir.build}/iPhone-ARM/Frameworks">
 		    <fileset dir="${project.dir.build}/Frameworks"/>
-		</copy>
+		</copy> -->
 		<copy todir="${project.dir.build}/iPhone-ARM/include">
 		    <fileset dir="${project.dir.ios}/Build/Products/Debug-iphoneos/include"/>
 		</copy>
