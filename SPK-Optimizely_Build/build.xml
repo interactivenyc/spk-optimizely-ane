@@ -57,7 +57,14 @@
 		<delete dir="${project.dir.swc}/bin"/>
 		<delete dir="${project.dir.default}/bin"/>
 		
+		<delete dir="${project.dir.test}/bin-debug"/>
+		<delete dir="${project.dir.test}/libs"/>
+		<delete dir="${project.dir.test}/libs_ane"/>
+		
 		<delete dir="${project.dir.ios}/Build"/>
+		
+		<delete file="${project.dir.java}/SPK-Optimizely.jar"/>
+		<delete file="${project.dir.java}/SPK-Optimizely_combined.jar"/>
 	
 	</target>
 	
@@ -305,7 +312,6 @@
 		
 		<exec executable="${adt}" failonerror="true" dir="${project.dir.build}">
 			<arg line="-package -target apk-debug -connect ${CURRENT_IP} -storetype pkcs12 -keystore ${project.dir.test}/cert/${android.p12} -storepass ${android.p12.pwd} ${project.dir.test}/bin-debug/${project.testapk} ${project.testmanifest} -C ${project.dir.test}/bin-debug ${project.testswf} -extdir ${project.dir.test}/bin-debug/libs_ane" />
-			
 		</exec>
 	</target>
 	
