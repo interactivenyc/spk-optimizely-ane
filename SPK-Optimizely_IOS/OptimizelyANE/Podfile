@@ -1,0 +1,3 @@
+platform :ios, '7.0'
+# Other Pods
+pod 'Optimizely-iOS-SDK'

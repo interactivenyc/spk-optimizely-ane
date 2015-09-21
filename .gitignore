@@ -12,3 +12,5 @@ bin-release/
 
 # OSX system files
 .DS_Store
+
+SPK-Optimizely_IOS/OptimizelyANE/Build

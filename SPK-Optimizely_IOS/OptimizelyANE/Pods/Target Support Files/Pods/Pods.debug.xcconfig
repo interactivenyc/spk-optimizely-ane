@@ -1,0 +1,6 @@
+FRAMEWORK_SEARCH_PATHS = "$(PODS_ROOT)/Optimizely-iOS-SDK"
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
+HEADER_SEARCH_PATHS = $(inherited) "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/Optimizely-iOS-SDK" "${PODS_ROOT}/Headers/Public/Optimizely-iOS-SDK/Optimizely"
+OTHER_CFLAGS = $(inherited) -isystem "${PODS_ROOT}/Headers/Public" -isystem "${PODS_ROOT}/Headers/Public/Optimizely-iOS-SDK" -isystem "${PODS_ROOT}/Headers/Public/Optimizely-iOS-SDK/Optimizely"
+OTHER_LDFLAGS = $(inherited) -ObjC -l"icucore" -l"sqlite3" -framework "AudioToolbox" -framework "CFNetwork" -framework "Foundation" -framework "MobileCoreServices" -framework "Optimizely" -framework "Security" -framework "SystemConfiguration" -framework "UIKit"
+PODS_ROOT = ${SRCROOT}/Pods

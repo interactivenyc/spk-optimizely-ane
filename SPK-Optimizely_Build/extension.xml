@@ -1,4 +1,4 @@
-<extension xmlns="http://ns.adobe.com/air/extension/16.0">
+<extension xmlns="http://ns.adobe.com/air/extension/18.0">
 	<id>com.speakaboos.ane.OptimizelyANE</id>
 	<versionNumber>1.0.0</versionNumber>
 	<platforms>
@@ -10,8 +10,7 @@
 				<finalizer>com.speakaboos.ane.optimizely.SpeakaboosANE</finalizer>
 			</applicationDeployment>
 		</platform>
-
-	    <!-- 
+	    
 		<platform name="iPhone-ARM"> 
             <applicationDeployment> 
                 <nativeLibrary>libOptimizelyANE.a</nativeLibrary> 
@@ -19,8 +18,15 @@
 				<finalizer>OptimizelyANEFinalizer</finalizer>
             </applicationDeployment> 
         </platform>
-         -->
-
+        
+		<platform name="iPhone-x86"> 
+            <applicationDeployment> 
+                <nativeLibrary>libOptimizelyANE.a</nativeLibrary> 
+                <initializer>OptimizelyANEInitializer</initializer>
+				<finalizer>OptimizelyANEFinalizer</finalizer>
+            </applicationDeployment> 
+        </platform>
+        
 		<platform name="default">
 			<applicationDeployment />
 		</platform>

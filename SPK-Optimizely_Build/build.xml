@@ -15,11 +15,15 @@
 		<echo>${ane.name} Native Extension created!</echo>
 	</target>
 	
-	<target name="buildOptimizely" depends="getIP,compile,makejar,combinejars,buildswcs,unzipswcs,packageAndroid,distribute,clean">
+	<target name="buildOptimizely" depends="getIP,compile,makejar,combinejars,buildswcs,unzipswcs,package,distribute">
 	    <echo>buildOptimizely finished</echo>
 	</target>
 	
 	<target name="testOptimizely" depends="getIP,compileTest,copyCerts,copyANE,packageTestAndroid,installTestAndroid">
+	    <echo>testOptimizely finished</echo>
+	</target>
+	
+	<target name="testOptimizelyIOS" depends="getIP,compileTest,copyCerts,copyANE,packageTestIOS,installTestIOS">
 	    <echo>testOptimizely finished</echo>
 	</target>
 	
@@ -100,7 +104,7 @@
 	<target name="buildIOS">
 	    <exec executable="${xcodebuild}">
 	        <arg value="-project"/>
-	        <arg value="${project.dir.ios}/${ane.name}.xcodeproj"/>
+	        <arg value="${project.dir.ios}/${ane.name}.xcworkspace"/>
 	        <arg value="-scheme"/>
 	        <arg value="${scheme}"/>
 	        <!-- <arg value="-configuration"/> -->
@@ -165,9 +169,31 @@
 		
 		<delete dir="${project.dir.build}/iPhone-ARM"/>
 		<mkdir dir="${project.dir.build}/iPhone-ARM"/>
+		<!-- <mkdir dir="${project.dir.build}/iPhone-ARM/Frameworks"/> -->
 		
 		<copy file="${project.dir.swc}/bin/library.swf" tofile="${project.dir.build}/iPhone-ARM/library.swf"/>
-		<copy file="${project.dir.ios}/Build/Products/Release-iphoneos/${lib.a}" tofile="${project.dir.build}/iPhone-ARM/${lib.a}"/>
+		<copy file="${project.dir.ios}/Build/Products/Debug-iphoneos/${lib.a}" tofile="${project.dir.build}/iPhone-ARM/${lib.a}"/>
+		<copy file="${project.dir.ios}/Build/Products/Debug-iphoneos/${libPods.a}" tofile="${project.dir.build}/iPhone-ARM/${libPods.a}"/>
+		<copy todir="${project.dir.build}/iPhone-ARM/Frameworks">
+		    <fileset dir="${project.dir.build}/Frameworks"/>
+		</copy>
+		<copy todir="${project.dir.build}/iPhone-ARM/include">
+		    <fileset dir="${project.dir.ios}/Build/Products/Debug-iphoneos/include"/>
+		</copy>
+		
+		<delete dir="${project.dir.build}/iPhone-x86"/>
+		<mkdir dir="${project.dir.build}/iPhone-x86"/>
+		<!-- <mkdir dir="${project.dir.build}/iPhone-x86/Frameworks"/> -->
+		
+		<copy file="${project.dir.swc}/bin/library.swf" tofile="${project.dir.build}/iPhone-x86/library.swf"/>
+		<copy file="${project.dir.ios}/Build/Products/Debug-iphoneos/${lib.a}" tofile="${project.dir.build}/iPhone-x86/${lib.a}"/>
+		<copy file="${project.dir.ios}/Build/Products/Debug-iphoneos/${libPods.a}" tofile="${project.dir.build}/iPhone-x86/${libPods.a}"/>
+		<!-- <copy todir="${project.dir.build}/iPhone-x86/Frameworks">
+		    <fileset dir="${project.dir.build}/Frameworks"/>
+		</copy> -->
+		<copy todir="${project.dir.build}/iPhone-x86/include">
+		    <fileset dir="${project.dir.ios}/Build/Products/Debug-iphoneos/include"/>
+		</copy>
 		
 		<exec executable="${adt}" failonerror="true" dir="${project.dir.build}">
 			<arg value="-package"/>
@@ -186,8 +212,20 @@
 			
 			<arg value="-platform"/>
 			<arg value="iPhone-ARM"/>
+			<arg value="-platformoptions"/>
+			<arg value="${project.dir.build}/platformoptions.xml"/>
+			<arg value="${project.dir.build}/iPhone-ARM/libPods.a"/>
 			<arg value="-C"/>
 			<arg value="${project.dir.build}/iPhone-ARM"/>
+			<arg value="."/>
+			
+			<arg value="-platform"/>
+			<arg value="iPhone-x86"/>
+			<arg value="-platformoptions"/>
+			<arg value="${project.dir.build}/platformoptions.xml"/>
+			<arg value="${project.dir.build}/iPhone-x86/libPods.a"/>
+			<arg value="-C"/>
+			<arg value="${project.dir.build}/iPhone-x86"/>
 			<arg value="."/>
 			
 			<arg value="-platform"/>
@@ -271,7 +309,7 @@
 		<copy file="${project.dir.test}/libs_ane/com.speakaboos.ane.${ane.name}.ane" tofile="${project.dir.test}/bin-debug/libs_ane/com.speakaboos.ane.${ane.name}.ane"/>
 		
 		<exec executable="${adt}" failonerror="true" dir="${project.dir.build}">
-			<arg line="-package -target apk-debug -connect ${CURRENT_IP} -storetype pkcs12 -keystore ${project.dir.test}/bin-debug/cert/${android.p12} -storepass ${android.p12.pwd} ${project.dir.test}/bin-debug/${project.testapk} ${project.testmanifest} -C ${project.dir.test}/bin-debug ${project.testswf} -extdir ${project.dir.test}/bin-debug/libs_ane" />
+			<arg line="-package -target apk-debug -connect ${CURRENT_IP} -storetype pkcs12 -keystore ${project.dir.test}/cert/${android.p12} -storepass ${android.p12.pwd} ${project.dir.test}/bin-debug/${project.testapk} ${project.testmanifest} -C ${project.dir.test}/bin-debug ${project.testswf} -extdir ${project.dir.test}/bin-debug/libs_ane" />
 			
 		</exec>
 	</target>
@@ -280,8 +318,10 @@
 		<mkdir dir="${project.dir.test}/bin-debug/libs_ane"/>
 		<copy file="${project.dir.test}/libs_ane/com.speakaboos.ane.${ane.name}.ane" tofile="${project.dir.test}/bin-debug/libs_ane/com.speakaboos.ane.${ane.name}.ane"/>
 		
+		<echo>-package -target ipa-debug -connect ${CURRENT_IP} -provisioning-profile ${project.dir.test}/bin-debug/cert/${mobileprovision.file} -storetype pkcs12 -keystore ${project.dir.test}/bin-debug/cert/${ios.p12} -storepass ${ios.p12.pwd} ${project.dir.test}/bin-debug/${project.testipa} ${project.testmanifest} -C ${project.dir.test}/bin-debug ${project.testswf} -extdir ${project.dir.test}/bin-debug/libs_ane</echo>
+		
 		<exec executable="${adt}" failonerror="true" dir="${project.dir.build}">
-			<arg line="-package -target ipa-debug -connect ${CURRENT_IP} -provisioning-profile ${project.dir.test}/cert/Speakaboos_ANE.mobileprovision -storetype pkcs12 -keystore ${project.dir.test}/cert/ccm-dev.p12 -storepass gr33nDr@g0n ${project.dir.test}/bin-debug/${project.testipa} ${project.testmanifest} -C ${project.dir.test}/bin-debug ${project.testswf} -extdir ${project.dir.test}/bin-debug/libs_ane" />
+			<arg line="-package -target ipa-debug -connect ${CURRENT_IP} -provisioning-profile ${project.dir.test}/bin-debug/cert/${mobileprovision.file} -storetype pkcs12 -keystore ${project.dir.test}/bin-debug/cert/${ios.p12} -storepass ${ios.p12.pwd} ${project.dir.test}/bin-debug/${project.testipa} ${project.testmanifest} -C ${project.dir.test}/bin-debug ${project.testswf} -extdir ${project.dir.test}/bin-debug/libs_ane" />
 		</exec>
 	</target>
 	
